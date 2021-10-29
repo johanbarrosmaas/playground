@@ -1,0 +1,24 @@
+{
+  "name": "playground-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "ts-node index.ts",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johanbarrosmaas/playground.git"
+  },
+  "author": "[Maas] (maas@mind.inf.br)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/johanbarrosmaas/playground/issues"
+  },
+  "homepage": "https://github.com/johanbarrosmaas/playground#readme",
+  "devDependencies": {
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  }
+}
