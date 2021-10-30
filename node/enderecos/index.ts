@@ -9,7 +9,7 @@ interface IEndereco {
     logradouro: string;
     complemento: string;
     cep: string;
-    cidade: ICidade; 
+    cidade: ICidade;
 }
 
 /**
@@ -27,8 +27,35 @@ export function cidade(uf: string, nome?: string): ICidade {
     return {} as ICidade;
 }
 
-export function endereco(cep: string): IEndereco {
-    return {} as IEndereco;
+export function endereco(cep: string): IEndereco {  
+ this.local={}
+    //variável "cep" somente com dígitos
+    cep.replace(/\D/g, '');
+    
+    //Verifica se campo cep possui valor informado.
+    if (cep != "") {      
+            
+         fetch('https://viacep.com.br/ws/'+cep+'/json')
+            .then(response => response.json())
+                      .then(data => {
+                        this.local = {
+                                 cep:data.cep,
+                                 logradouro:data.logradouro,
+                                 complemento:data.complemento,
+                                 cidade:{
+                                           nome:data.localidade,
+                                           uf:data.uf,
+                                           ibgecod:data.ibge
+                                        }
+                               }
+                 
+                 }).catch((erro)=> { 
+                     console.log(erro)               
+                 })
+       
+    }
+       return this.local as IEndereco ;
 }
 
 export default { cidade, endereco }
+

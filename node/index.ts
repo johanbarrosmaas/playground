@@ -1,4 +1,4 @@
-import { cidade } from "./enderecos";
+import { endereco } from "./enderecos";
 
-const a = cidade('89051300');
+const a = endereco('89051300');
 console.log(`Cidade retornada:`, [a]);
