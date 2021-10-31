@@ -1,4 +1,5 @@
 import { endereco } from "./enderecos";
 
-const a = endereco('89051300');
-console.log(`Cidade retornada:`, [a.cidade]);
+endereco('89051300').then(endereco => {
+    console.log(`Cidade retornada:`, [endereco.cidade]);
+});
