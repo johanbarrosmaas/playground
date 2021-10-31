@@ -28,12 +28,13 @@ export function cidade(uf: string, nome?: string): ICidade {
 }
 
 export function endereco(cep: string): IEndereco {
-    this.local = {}
+    var local = {}
     //variável "cep" somente com dígitos
     cep.replace(/\D/g, '');
 
     //Verifica se campo cep possui valor informado.
     if (cep != "") {
+        
              fetch('https://viacep.com.br/ws/' + cep + '/json')
             .then(response => response.json())
             .then(data => {
