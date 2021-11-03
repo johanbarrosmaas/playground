@@ -22,14 +22,20 @@ function onlydigit(text: string) {
  * Busca cidade pelo CEP
  * @param cep 
  */
-export function cidade(cep: string): ICidade;
+export function cidadeByCep(cep: string): ICidade {
+    if (cep == null) throw new Error("Necessário informar um estado!");
+    return {} as ICidade;
+};
 
 /**
- * Busca cidade pelo UF e nome
+ * Busca cidade por UF e nome
  * @param uf
- * @param nome Nome da cidade buscada
+ * @param nome 
  */
-export function cidade(uf: string, nome?: string): ICidade {
+export function cidadeByName(uf: string, nome: string): ICidade {
+    if (uf == null) throw new Error("Necessário informar um estado!");
+    if (nome == null) throw new Error("Necessário informar uma cidade!");
+
     return {} as ICidade;
 }
 
@@ -107,11 +113,14 @@ export async function endereco(cep: string): Promise<IEndereco> {
         const viacep = enderecoViacep(cep).catch();
     
         // Promise race retorna a primeira promisse que resolver 
-        return await Promise.race([postmon, viacep]);
+        return await Promise.race([postmon, viacep]).catch(reason => {
+            console.log(reason);
+            return {} as IEndereco;
+        });
     } catch (reason) {
         return Promise.reject(reason);
     }
 }
 
-export default { cidade, endereco }
+export default { cidadeByCep, cidadeByName, endereco }
 
