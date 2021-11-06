@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 
 interface ICidade {
     nome: string;
@@ -12,50 +13,152 @@ interface IEndereco {
     cidade: ICidade;
 }
 
+function onlydigit(text: string) {
+    if (text == null) throw new Error('Necessário informar um CEP válido');
+    return text.replace(/\D/g, '');
+}
+function validaUfNome(uf: string, nome: string) {
+    if (uf == null) throw new Error('Necessário informar um UF válido');
+    if (nome == null) throw new Error('Necessário informar nome da cidade');
+    return
+}
+
 /**
  * Busca cidade pelo CEP
  * @param cep 
  */
-export function cidade(cep: string): ICidade;
+export async function cidadeByCep(cep: string): Promise<ICidade> {
+    const data = await endereco(cep)
+    const nome = data.cidade.nome;
+    const uf = data.cidade.uf;
+    if (data) {
+        return cidadeByName(nome, uf)
+    } else {
+        return Promise.reject('Não foi possível acessar a api do Ibge');
+    }
+};
 
 /**
- * Busca cidade pelo UF e nome
+ * Busca cidade por UF e nome
  * @param uf
- * @param nome Nome da cidade buscada
+ * @param nome 
  */
-export function cidade(uf: string, nome?: string): ICidade {
-    return {} as ICidade;
-}
+export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
+    var ibgeCodNew: any;
+    if (uf == null) throw new Error("Necessário informar um estado!");
+    if (nome == null) throw new Error("Necessário informar uma cidade!");
 
-export function endereco(cep: string): IEndereco {
-    var local = {}
-    //variável "cep" somente com dígitos
-    cep.replace(/\D/g, '');
+    var ibge = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
 
-    //Verifica se campo cep possui valor informado.
-    if (cep != "") {
-        
-             fetch('https://viacep.com.br/ws/' + cep + '/json')
-            .then(response => response.json())
-            .then(data => {
-                this.local = {
-                    cep: data.cep,
-                    logradouro: data.logradouro,
-                    complemento: data.complemento,
-                    cidade: {
-                        nome: data.localidade,
-                        uf: data.uf,
-                        ibgecod: data.ibge
-                    }
-                }
+    if (ibge) {
+        if (ibge.ok) {
+            const dado = await ibge.json();
 
-            }).catch((erro) => {
-                this.local = {};
-                return;
+            const newDado = dado.map(function (any) {
+                if (any.nome == nome)
+                    return any.id;
             });
-    };
-    return this.local as IEndereco;
+
+            const identidade = newDado.map(function (any) {
+                if (any != undefined)
+                    return any
+            });
+
+            for (var i = 0; i < identidade.length; i++) {
+                if ((identidade[i] != undefined && identidade[i]!= null))
+                    ibgeCodNew = identidade[i]
+            };
+
+            return {
+                uf: uf,
+                nome: nome,
+                ibgecod: ibgeCodNew
+            }
+
+        } else {
+            return Promise.reject(await ibge.json());
+        }
+    } else {
+        return Promise.reject('Não foi possível acessar a api do IBGE');
+    }
 }
 
-export default { cidade, endereco }
+async function enderecoViacep(cep: string): Promise<IEndereco> {
+    const cepdigit = onlydigit(cep);
+    if (cep.length < 8) throw new Error('Cep precisa conter 8 dígitos');
+
+    const viacep = await fetch(`https://viacep.com.br/ws/${cepdigit}/json`);
+
+    if (viacep) {
+        if (viacep.ok) {
+            const { cep, logradouro, complemento, localidade: nome, uf, ibge: ibgecod }: any = await viacep.json();
+
+            return {
+                cep,
+                logradouro,
+                complemento,
+                cidade: {
+                    uf,
+                    nome,
+                    ibgecod
+                }
+            };
+        } else {
+            return Promise.reject(await viacep.json());
+        }
+    } else {
+        return Promise.reject('Não foi possível acessar a api do Viacep');
+    }
+}
+
+async function enderecoPostmon(cep: string) {
+    const cepdigit = onlydigit(cep);
+    if (cep.length < 8) throw new Error('Cep precisa conter 8 dígitos');
+
+    const postmon = await fetch(`https://api.postmon.com.br/v1/cep/${cepdigit}`);
+
+    if (postmon) {
+        if (postmon.ok) {
+            const { cep, logradouro, complemento, cidade: nome, estado: uf, cidade_info: { codigo_ibge: ibgecod } }: any = await postmon.json();
+
+            return {
+                cep,
+                logradouro,
+                complemento,
+                cidade: {
+                    uf,
+                    nome,
+                    ibgecod
+                }
+            };
+
+        } else {
+            return Promise.reject(await postmon.json());
+        }
+    } else {
+        return Promise.reject('Não foi possível acessar a api do Postmon');
+    }
+}
+
+export async function endereco(cep: string): Promise<IEndereco> {
+    try {
+        const cepdigit = onlydigit(cep);
+        if (cep.length < 8) throw new Error('Cep precisa conter 8 dígitos');
+
+        const postmon = enderecoPostmon(cep).catch();
+        const viacep = enderecoViacep(cep).catch();
+
+        // Promise race retorna a primeira promisse que resolver 
+        return await Promise.race([postmon, viacep]).catch(reason => {
+            return {} as IEndereco;
+        });
+    } catch (reason) {
+        return Promise.reject(reason);
+    }
+}
+
+export default { cidadeByCep, cidadeByName, endereco }
+
+
+
 
