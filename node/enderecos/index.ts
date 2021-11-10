@@ -40,7 +40,7 @@ export async function cidadeByCep(cep: string): Promise<ICidade> {
  */
 export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
     var ibgeCodNew: any;
-   
+
     if (uf == null) throw new Error("Necessário informar um estado!");
     if (nome == null) throw new Error("Necessário informar uma cidade!");
 
@@ -49,18 +49,17 @@ export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
     if (ibge) {
         if (ibge.ok) {
             const dado = await ibge.json();
-              
+
             for (var i = 0; i < dado.length; i++) {
-                if (dado[i].nome = nome ){
+                if (dado[i].nome == nome) {
                     ibgeCodNew = dado[i].id;
-                }                   
+                }
             };
             return {
                 uf: uf,
                 nome: nome,
                 ibgecod: ibgeCodNew
             }
-
         } else {
             return Promise.reject(await ibge.json());
         }
@@ -74,7 +73,6 @@ async function enderecoViacep(cep: string): Promise<IEndereco> {
     if (cep.length < 8) throw new Error('Cep precisa conter 8 dígitos');
 
     const viacep = await fetch(`https://viacep.com.br/ws/${cepdigit}/json`);
-
     if (viacep) {
         if (viacep.ok) {
             const { cep, logradouro, complemento, localidade: nome, uf, ibge: ibgecod }: any = await viacep.json();
@@ -102,7 +100,6 @@ async function enderecoPostmon(cep: string) {
     if (cep.length < 8) throw new Error('Cep precisa conter 8 dígitos');
 
     const postmon = await fetch(`https://api.postmon.com.br/v1/cep/${cepdigit}`);
-
     if (postmon) {
         if (postmon.ok) {
             const { cep, logradouro, complemento, cidade: nome, estado: uf, cidade_info: { codigo_ibge: ibgecod } }: any = await postmon.json();
@@ -117,7 +114,6 @@ async function enderecoPostmon(cep: string) {
                     ibgecod
                 }
             };
-
         } else {
             return Promise.reject(await postmon.json());
         }
@@ -133,7 +129,6 @@ export async function endereco(cep: string): Promise<IEndereco> {
 
         const postmon = enderecoPostmon(cep).catch();
         const viacep = enderecoViacep(cep).catch();
-
         // Promise race retorna a primeira promisse que resolver 
         return await Promise.race([postmon, viacep]).catch(reason => {
             return {} as IEndereco;
