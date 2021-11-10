@@ -51,20 +51,15 @@ export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
             const dado = await ibge.json();
 
             const newDado = dado.map(function (obj:any) {
-                if (obj.nome == nome)
+                if (obj.nome == nome){
                     return obj.id;
-            });
-
-            const identidade = newDado.map(function (obj:any) {
-                if (obj != undefined)
-                    return obj;
-            });
-
-            for (var i = 0; i < identidade.length; i++) {
-                if ((identidade[i] != undefined && identidade[i]!= null))
-                    ibgeCodNew = identidade[i];
+                }                  
+            });               
+            for (var i = 0; i < newDado.length; i++) {
+                if (newDado[i] != undefined ){
+                    ibgeCodNew = newDado[i];
+                }                   
             };
-
             return {
                 uf: uf,
                 nome: nome,
