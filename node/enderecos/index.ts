@@ -17,11 +17,6 @@ function onlydigit(text: string) {
     if (text == null) throw new Error('Necessário informar um CEP válido');
     return text.replace(/\D/g, '');
 }
-function validaUfNome(uf: string, nome: string) {
-    if (uf == null) throw new Error('Necessário informar um UF válido');
-    if (nome == null) throw new Error('Necessário informar nome da cidade');
-    return
-}
 
 /**
  * Busca cidade pelo CEP
@@ -34,7 +29,7 @@ export async function cidadeByCep(cep: string): Promise<ICidade> {
     if (data) {
         return cidadeByName(nome, uf)
     } else {
-        return Promise.reject('Não foi possível acessar a api do Ibge');
+        return Promise.reject('Não foi possível acessar as api do viacep e Postmon');
     }
 };
 
@@ -45,6 +40,7 @@ export async function cidadeByCep(cep: string): Promise<ICidade> {
  */
 export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
     var ibgeCodNew: any;
+   
     if (uf == null) throw new Error("Necessário informar um estado!");
     if (nome == null) throw new Error("Necessário informar uma cidade!");
 
@@ -54,19 +50,19 @@ export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
         if (ibge.ok) {
             const dado = await ibge.json();
 
-            const newDado = dado.map(function (any) {
-                if (any.nome == nome)
-                    return any.id;
+            const newDado = dado.map(function (obj:any) {
+                if (obj.nome == nome)
+                    return obj.id;
             });
 
-            const identidade = newDado.map(function (any) {
-                if (any != undefined)
-                    return any
+            const identidade = newDado.map(function (obj:any) {
+                if (obj != undefined)
+                    return obj;
             });
 
             for (var i = 0; i < identidade.length; i++) {
                 if ((identidade[i] != undefined && identidade[i]!= null))
-                    ibgeCodNew = identidade[i]
+                    ibgeCodNew = identidade[i];
             };
 
             return {
@@ -79,7 +75,7 @@ export async function cidadeByName(uf: string, nome: string): Promise<ICidade> {
             return Promise.reject(await ibge.json());
         }
     } else {
-        return Promise.reject('Não foi possível acessar a api do IBGE');
+        return Promise.reject('Não foi possível acessar a api do IBGE ');
     }
 }
 
