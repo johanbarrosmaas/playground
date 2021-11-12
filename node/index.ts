@@ -7,10 +7,10 @@ import { endereco, cidadeByCep, cidadeByName } from "./enderecos";
 //});
 
 cidadeByCep('89051-300').then(x =>{
-   // console.log(x, )
+    console.log(x )
 
 });
 cidadeByName('sc', 'Florianópolis').then(x =>{
-    console.log(x)
+   // console.log(x)
 
 });

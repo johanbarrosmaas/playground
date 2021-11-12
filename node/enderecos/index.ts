@@ -24,10 +24,21 @@ function onlydigit(text: string) {
  */
 export async function cidadeByCep(cep: string): Promise<ICidade> {
     const data = await endereco(cep)
-    const nome = data.cidade.nome;
-    const uf = data.cidade.uf;
-    if (data) {
-        return cidadeByName(nome, uf)
+    
+
+    if (data.cidade.ibgecod === undefined) {
+        
+        const { uf:uf,nome:nome,ibgecod:ibgecod }: any = await cidadeByName(data.cidade.uf,data.cidade.nome)
+   
+        return {
+            uf: uf,
+            nome: nome,
+            ibgecod: ibgecod
+        }
+      
+                
+        
+
     } else {
         return Promise.reject('Não foi possível acessar as api do viacep e Postmon');
     }
@@ -75,7 +86,7 @@ async function enderecoViacep(cep: string): Promise<IEndereco> {
     const viacep = await fetch(`https://viacep.com.br/ws/${cepdigit}/json`);
     if (viacep) {
         if (viacep.ok) {
-            const { cep, logradouro, complemento, localidade: nome, uf, ibge: ibgecod }: any = await viacep.json();
+            const { cep, logradouro, complemento, localidade: nome, uf,undefined: ibgecod }: any = await viacep.json();
 
             return {
                 cep,
@@ -102,7 +113,7 @@ async function enderecoPostmon(cep: string) {
     const postmon = await fetch(`https://api.postmon.com.br/v1/cep/${cepdigit}`);
     if (postmon) {
         if (postmon.ok) {
-            const { cep, logradouro, complemento, cidade: nome, estado: uf, cidade_info: { codigo_ibge: ibgecod } }: any = await postmon.json();
+            const { cep, logradouro, complemento, cidade: nome, estado: uf, cidade_info: {undefined: ibgecod } }: any = await postmon.json();
 
             return {
                 cep,
